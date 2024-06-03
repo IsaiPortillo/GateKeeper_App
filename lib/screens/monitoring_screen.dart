@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gatekeeper/services/firebase_services.dart';
 
 class MonitorScreen extends StatelessWidget {
-  const MonitorScreen({super.key});
-
-  final List<String> logs = const [
-    "Usuario 1 - RFID - 12:00 PM",
-    "Usuario 2 - Bluetooth - 12:05 PM",
-    // Lista de registros simulada
-  ];
+  const MonitorScreen({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,17 +15,43 @@ class MonitorScreen extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),
-          child: ListView.builder(
-            itemCount: logs.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(logs[index]),
-                leading: Icon(
-                  Icons.access_time,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              );
-            },
+          child: FutureBuilder(
+            future: getData(),
+            builder: ((context, snapshot) {
+              if (snapshot.hasData) {
+                return ListView.builder(
+                  itemCount: snapshot.data?.length,
+                  itemBuilder: (context, index) {
+                    // Obtener la hora de la fecha
+                    DateTime dateTime = snapshot.data?[index]['Hora'].toDate();
+                    String hora = '${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+                    // Usar un ListTile para mostrar Nombre, Sensor y Hora
+                    return Container(
+                      margin: EdgeInsets.all(8), // Margen alrededor de la ListTile
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black), // Borde negro
+                        borderRadius: BorderRadius.circular(8), // Bordes redondeados
+                      ),
+                      child: ListTile(
+                        title: Row(
+                          children: [
+                            Text(snapshot.data?[index]['Nombre']),
+                            SizedBox(width: 8),
+                            Text('Sensor: ${snapshot.data?[index]['Sensor']}'),
+                            SizedBox(width: 8),
+                            Text('Hora: $hora'),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            }),
           ),
         ),
       ),
