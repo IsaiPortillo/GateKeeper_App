@@ -4,6 +4,7 @@ import 'package:gatekeeper/screens/settings_screen.dart';
 import 'package:gatekeeper/screens/alerts_screen.dart';
 import 'package:gatekeeper/screens/accessmanage_screen.dart';
 import 'package:gatekeeper/screens/monitoring_screen.dart';
+import 'package:gatekeeper/screens/bluetooth_screen.dart'; // Importa la pantalla de Bluetooth
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -81,6 +82,25 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
+                    MaterialPageRoute(builder: (context) => BluetoothScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 15,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: const Text('Control Cerradura'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
                   );
                 },
@@ -102,3 +122,4 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+
