@@ -21,7 +21,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
   @override
   void initState() {
     super.initState();
-    channel = IOWebSocketChannel.connect('ws://192.168.1.211:8888');
+    channel = IOWebSocketChannel.connect('ws://192.168.32.211:8888');
     channel.stream.listen((message) {
       _buffer.add(Uint8List.fromList(message));
       if (_buffer.length > 5) {
