@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:gatekeeper/screens/home_screen.dart';
+import 'package:gatekeeper/user_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,10 +12,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   void _login() {
-    final username = _usernameController.text;
-    final password = _passwordController.text;
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
 
-    if (username == 'admin' && password == 'admin') {
+    if (UserManager.authenticate(username, password)) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),

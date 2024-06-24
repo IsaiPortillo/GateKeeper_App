@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gatekeeper/user_manager.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -16,10 +17,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   void _changePassword() {
     if (_formKey.currentState!.validate()) {
-      // Aquí iría la lógica para cambiar la contraseña en la base de datos o backend.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contraseña cambiada exitosamente')),
-      );
+      final username = _usernameController.text.trim();
+      final currentPassword = _currentPasswordController.text.trim();
+      final newPassword = _newPasswordController.text.trim();
+
+      if (UserManager.changePassword(username, currentPassword, newPassword)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Contraseña cambiada exitosamente')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al cambiar la contraseña')),
+        );
+      }
     }
   }
 
