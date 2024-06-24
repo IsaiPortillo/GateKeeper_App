@@ -1,14 +1,53 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:gatekeeper/services/firebase_services.dart';
+import 'package:web_socket_channel/io.dart';
 
-class MonitorScreen extends StatelessWidget {
+class MonitorScreen extends StatefulWidget {
   const MonitorScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    // URL de la transmisión en tiempo real de la ESP32-CAM
-    final String cameraStreamUrl = 'http://192.168.32.222';
+  _MonitorScreenState createState() => _MonitorScreenState();
+}
 
+class _MonitorScreenState extends State<MonitorScreen> {
+  late IOWebSocketChannel channel;
+  Uint8List? imageBytes;
+  final List<Uint8List> _buffer = [];
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    channel = IOWebSocketChannel.connect('ws://192.168.1.211:8888');
+    channel.stream.listen((message) {
+      _buffer.add(Uint8List.fromList(message));
+      if (_buffer.length > 5) {
+        _buffer.removeAt(0);
+      }
+    });
+
+    // Setup a timer to update the image at 25 FPS
+    _timer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
+      if (_buffer.isNotEmpty) {
+        setState(() {
+          imageBytes = _buffer.removeAt(0);
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    channel.sink.close();
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Monitorización')),
       body: Padding(
@@ -25,25 +64,13 @@ class MonitorScreen extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16.0),
-                child: Image.network(
-                  cameraStreamUrl,
-                  fit: BoxFit.cover, // Ajustar la imagen al contenedor
-                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                    if (loadingProgress == null) {
-                      return child;
-                    }
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                            : null,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(child: Text('Error al cargar la transmisión de video'));
-                  },
-                ),
+                child: imageBytes != null
+                    ? Image.memory(
+                  imageBytes!,
+                  fit: BoxFit.cover,
+                  gaplessPlayback: true,
+                )
+                    : const Center(child: CircularProgressIndicator()),
               ),
             ),
             // Card para mostrar las notificaciones
